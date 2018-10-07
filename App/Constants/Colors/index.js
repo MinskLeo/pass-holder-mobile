@@ -4,8 +4,10 @@ const colors = {
   textLight: '#eee',
 
   greenLight: '#00796b',
-  greenDark: '#004c40'
+  greenDark: '#004c40',
   
+  redDark: '#7f0000',
+  redLight: '#b71c1c'
 }
 
 export const boxColors = [

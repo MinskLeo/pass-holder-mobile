@@ -34,21 +34,22 @@ class LoginScreen extends React.Component {
 
 
   onKeyFieldChange = (text) => {
+    const { storage } = this.props.navigation.state.params;
     this.setState({
       keyValue: text
     });
     
-    const isIdentified = AuthService.checkKey(text);
+    const isIdentified = AuthService.checkKey(text, storage);
     if (isIdentified) {
       this.setState({
         isTransitioning: true
-      })
+      });
       Animated.timing(this.state.lottieProgress, {
         toValue: 0.5,
         duration: 640,
         easing: Easing.ease
       }).start(() => {
-        this.props.navigation.navigate('BoxesList');
+        this.props.navigation.navigate('BoxesList',{storage});
       });
     }
   }
@@ -71,6 +72,8 @@ class LoginScreen extends React.Component {
           onChangeText={this.onKeyFieldChange}
           value={keyValue}
           disabled={isTransitioning}
+          labelContent='key-variant'
+          keyboardType='numeric'
         />
       </View>
     );

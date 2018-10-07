@@ -17,7 +17,11 @@ type Props = {
   placeholder?: string,
   passwordField?: boolean,
   value: string,
-  onChangeText?: () => void,
+  labelContent?: string,
+  labelType?: 'text' | 'icon',
+  maxLength?: number,
+  validationFunc?: () => void,
+  onChangeText?: () => void
 }
 
 class Input extends React.Component<Props> {
@@ -32,14 +36,38 @@ class Input extends React.Component<Props> {
   }
 
   render () {
-    const { disabled, keyboardType, placeholder, passwordField, label, value, onChangeText } = this.props;
+    const {
+      disabled,
+      keyboardType,
+      placeholder,
+      passwordField,
+      label,
+      value,
+      onChangeText,
+      stylesWrapper,
+      labelContent,
+      labelType,
+      validationFunc,
+      maxLength,
+      onValidationChange
+    } = this.props;
     const { touched } = this.state;
+    let isValid = true;
+    if(validationFunc) {
+      isValid = validationFunc(value).state;
+      onValidationChange && onValidationChange(isValid);
+    }
 
     return (
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper, stylesWrapper]}>
         <View style={styles.inputContainer}>
           <View style={styles.labelContainer}>
-            <Image style={styles.label} name='key-variant' />
+            {!labelType || labelType==='icon' ? 
+              <Image style={[styles.labelImage, !isValid && styles.invalidIcon]} name={labelContent} />
+              :
+              <Text color='light' style={[styles.labelText, !isValid && styles.invalidIcon ]}>{labelContent}</Text>
+            }
+            
           </View>
           <TextInput
             style={styles.input}
@@ -50,10 +78,11 @@ class Input extends React.Component<Props> {
             autoCorrect={false}
             secureTextEntry={passwordField}
             value={value}
+            maxLength={maxLength}
           />
         </View>
         
-        <View style={styles.separator} />
+        <View style={[styles.separator, !isValid && styles.invalidSeparator]} />
       </View>
     );
   }
@@ -98,8 +127,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.bg
   },
-  label: {
+  labelImage: {
     fontSize: 25,
     color: Colors.greenLight
+  },
+  labelText: {
+    fontSize: 18,
+    color: Colors.greenLight
+  },
+  invalidIcon: {
+    color: Colors.redLight
+  },
+  invalidSeparator: {
+    backgroundColor: Colors.redLight
   }
 });

@@ -12,7 +12,7 @@ import NavigationHelper from 'App/Helpers/Navigation';
 class BoxesList extends React.Component {
   static navigationOptions = () => {
     return {
-      header: null
+      
     }
   }
 

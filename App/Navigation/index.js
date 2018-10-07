@@ -9,9 +9,22 @@ import Welcome from 'App/Screens/WizardStack/Welcome';
 
 // Auth
 import LoginScreen from 'App/Screens/AuthStack/LoginScreen';
+import CheckStorage from 'App/Screens/AuthStack/CheckStorage';
 
 // App
-import BoxesList from 'App/Screens/AuthStack/BoxesList';
+import BoxesList from 'App/Screens/AppStack/BoxesList';
+
+const AppStack = createStackNavigator({
+  BoxesList
+},{
+  navigationOptions: () => {
+    return {
+      headerStyle: {
+        backgroundColor: Colors.greenLight,
+      }
+    }
+  }
+});
 
 const WizardStack = createStackNavigator({
   Welcome
@@ -27,22 +40,19 @@ const WizardStack = createStackNavigator({
 });
 
 const AuthStack = createStackNavigator({
-  BoxesList,
-  LoginScreen
+  CheckStorage,
+  LoginScreen,
 },{
-  initialRouteName: 'LoginScreen'
+  initialRouteName: 'CheckStorage'
 });
 
-const AppStack = createStackNavigator({
-  LoginScreen
-});
 
 const Navigation = createSwitchNavigator({
-  WizardStack,
   AuthStack,
+  WizardStack,
   AppStack
 }, {
-  initialRouteName: 'WizardStack'
+  initialRouteName: 'AuthStack'
 });
 
 export default Navigation;

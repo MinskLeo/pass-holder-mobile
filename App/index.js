@@ -5,7 +5,7 @@ import {
   StatusBar
 } from 'react-native';
 import Navigation from 'App/Navigation';
-import { setNavigationRef } from 'App/Helpers/Navigation';
+import { setNavigator } from 'App/Helpers/Navigation';
 import Colors from 'App/Constants/Colors';
 
 class App extends React.Component {
@@ -13,7 +13,7 @@ class App extends React.Component {
     return (
       <View style={{flex: 1}}>
         <StatusBar backgroundColor={Colors.greenDark} />
-        <Navigation ref={input => setNavigationRef(input)} />
+        <Navigation ref={input => setNavigator(input)} />
       </View>
     );
   }

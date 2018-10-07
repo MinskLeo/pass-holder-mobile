@@ -3,60 +3,128 @@ import {
   View,
   Dimensions,
   StyleSheet,
-  PanResponder
+  Animated,
+  Easing
 } from 'react-native';
-
-const screenSizes = Dimensions.get('screen');
+import Colors from 'App/Constants/Colors';
+import * as Animatable from 'react-native-animatable';
+import TouchableComponent from 'App/Components/TouchableComponent';
+import Text from 'App/Components/Text';
 
 type Props = {
-  children: Any
+  children: Any,
+  animationDuration?: number,
+  styleContent?: Object,
+  styleNavigationBar?: Object,
+  styleNavigationButton?: Object,
+  blockNext?: boolean,
+  onFinal?: () => void
 }
 
 class DraggableScreens extends React.Component<Props> {
   state = {
-    breakPoints: [],
-    nearestBreakpoint: '0',
-    
+    fadeInOpacity: new Animated.Value(0),
+    currentPage: 0,
+    inTransitionState: true,
   }
 
-  calculateNearestBreakpoint = (currentX) => {
-    const { breakPoints } = this.state;
+  animateAndNextValue = (nextValue) => {
+    const { animationDuration } = this.props;
+    this.setState({
+      inTransitionState: true
+    });
+    Animated.timing(this.state.fadeInOpacity, {
+      toValue: 0,
+      duration: animationDuration || 1000
+    }).start(() => {
 
-    let currentIndex = Math.abs((breakPoints.length - 1) / 2);
-    let leftBreakPoint = currentIndex==0 ? '0' : breakPoints[currentIndex-1];
-    let rightBreakPoint = currentIndex == (breakPoints.length-1) ? breakPoints[breakPoints.length-1] : breakPoints[currentIndex + 1];
-
-    console.log(`${currentIndex} ${leftBreakPoint} ${rightBreakPoint}`)
+      this.setState({
+        currentPage: nextValue
+      }, () => {
+        Animated.timing(this.state.fadeInOpacity, {
+          toValue: 1,
+          duration: animationDuration || 1000
+        }).start( () => {
+          this.setState({
+            inTransitionState: false
+          })
+        });
+      });
+    });
   }
 
-  calculateBreakpoints = (arr) => {
-    const breakPoints = [];
-    breakPoints[breakPoints.length] = '0';
+  onNextPress = () => {
+    const { currentPage } = this.state;
+    const { children } = this.props;
+    let nextValue = 0;
 
-    let stackValue = 0;
-    for(let i=0;i<arr.length;i++) {
-      stackValue+=screenSizes.width;
-      breakPoints[breakPoints.length] = stackValue;
+    if(currentPage<children.length-1) {
+      nextValue = currentPage + 1;
+      this.animateAndNextValue(nextValue);
+    }
+  }
+
+  onFinalPress = () => {
+    const { onFinal } = this.props;
+
+    if(onFinal) {
+      onFinal();
+    }
+  }
+
+  onPrevPress = () => {
+    const { currentPage } = this.state;
+    let nextValue = 0;
+
+    if(currentPage>0) {
+      nextValue = currentPage - 1;
+      this.animateAndNextValue(nextValue);
     }
 
-    return breakPoints;
+
   }
 
   componentDidMount = () => {
-    const { children } = this.props;
-
-    const breakPoints = this.calculateBreakpoints(children);
-    const nearest = this.calculateNearestBreakpoint('0');
+    const { animationDuration } = this.props;
+    Animated.timing(this.state.fadeInOpacity,{
+      toValue: 1,
+      duration: animationDuration || 1000
+    }).start( () => {
+      this.setState({
+        inTransitionState: false
+      });
+    });
   }
 
   render () {
-    const { children } = this.props;
-    console.log(children);
+    const { children, blockNext } = this.props;
+    const { fadeInOpacity, currentPage, inTransitionState } = this.state;
+    const isArray = Array.isArray(children);
+    const isFinalState = !isArray || currentPage === children.length - 1;
 
     return (
       <View style={styles.wrapper}>
-        <View style={styles.innerContainer}>
-          {children}
+        <Animatable.View style={[styles.contentContainer, {opacity: fadeInOpacity}]} ref={input=>this.contentContainer=input}>
+          {isArray ? children[currentPage] : children}
+          {/* {children[5]} */}
+        </Animatable.View>
+        <View style={styles.navigationBar}>
+          <TouchableComponent
+            type='android'
+            style={styles.navigationBarButton}
+            onPress={this.onPrevPress}
+            disabled={inTransitionState || currentPage==0}
+          >
+            {currentPage>0 && <Text color='light'>Back</Text>}
+          </TouchableComponent>
+          <TouchableComponent
+            type='android'
+            style={styles.navigationBarButton}
+            onPress={isFinalState ? this.onFinalPress : this.onNextPress}
+            disabled={inTransitionState || blockNext}
+          >
+            {!blockNext && <Text color='light'>{isFinalState ? 'Finish' : 'Next'}</Text>}
+          </TouchableComponent>
         </View>
       </View>
     );
@@ -68,12 +136,29 @@ export default DraggableScreens;
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-    height: '100%'
-  },
-  innerContainer: {
     height: '100%',
+    backgroundColor: Colors.bg
+  },
+  contentContainer: {
+    height: '92%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.bg
+  },
+  navigationBar: {
+    width: '100%',
+    height: '8%',
+    backgroundColor: Colors.greenDark,
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
+  navigationBarButton: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%'
+  },
 });
